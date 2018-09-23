@@ -23,6 +23,14 @@ const (
 	UNSUBSCRIBE = "unsubscribe"
 )
 
+func (p *PubSub) publish(message Message) {
+	for _, t := range p.Topic {
+		if (t.Topic == message.Topic) {
+			t.Client.Conn.WriteMessage(1, []byte(message.Message))
+		}
+	}
+}
+
 func (p *PubSub) add(client Client) *PubSub {
 	p.Client = append(p.Client, client)
 	p.addTopic(client, TopicAll)
@@ -56,6 +64,7 @@ func (p *PubSub) remove(client Client) {
 func (p *PubSub) HandleReceiveMessage(client Client, message Message) {
 	switch message.Action {
 	case PUBLISH:
+		p.publish(message)
 		break
 	case SUBSCRIBE:
 		p.addTopic(client, message.Topic)
