@@ -1,5 +1,6 @@
 package main
 
+import "C"
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/gofrs/uuid"
@@ -7,6 +8,11 @@ import (
 	"log"
 	"net/http"
 )
+
+type Client struct {
+	ID   string
+	Conn *websocket.Conn
+}
 
 var upgrader = websocket.Upgrader{
 	ReadBufferSize:  1024,
@@ -16,6 +22,8 @@ var upgrader = websocket.Upgrader{
 	},
 }
 
+var ps PubSub
+
 func WsHandlerFunc(c *gin.Context) {
 	conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
 
@@ -24,7 +32,35 @@ func WsHandlerFunc(c *gin.Context) {
 		return
 	}
 
-	id := uuid.Must(uuid.NewV4())
+	id := uuid.Must(uuid.NewV4()).String()
 
-	conn.WriteMessage(1, []byte("連線成功:" + id.String()))
+	client := Client{
+		ID:   id,
+		Conn: conn,
+	}
+
+	ps.add(client)
+
+	conn.WriteMessage(1, []byte("連線成功:"+client.ID))
+
+	run(client)
+}
+
+func run(client Client) {
+	defer client.Conn.Close()
+
+	var msg Message
+
+	for {
+		err := client.Conn.ReadJSON(&msg)
+
+		if err != nil {
+			log.Println("讀取失敗ID:%s", client.ID)
+			log.Println("失敗原因", err)
+			ps.remove(client)
+			return
+		}
+
+		ps.HandleReceiveMessage(client)
+	}
 }
