@@ -9,22 +9,45 @@
         var ws = new WebSocket('ws://127.0.0.1:8080/ws');
 
         ws.onopen = () => {
-            console.log("建立連線");
+            document.querySelector("#text").value += "建立連線\n"
         }
 
         ws.onmessage = (msg) => {
-            console.log("Server messsage:", msg.data);
+            document.querySelector("#text").value += msg.data + "\n"
         }
 
         ws.onclose = () => {
-            alert("連線中斷")
+            document.querySelector("#text").value += "連線中斷"
         }
 
-        window.ws = ws;
+        window.onload = function () {
+            document.querySelector('#send').onclick = function () {
+                ws.send('{"action":"' +
+                        document.querySelector('select').value + '",' +
+                        '"topic":"' + document.querySelector('#topic').value + '",' +
+                        '"message":"' + document.querySelector('#msg').value + '"' +
+                        '}')
+            }
+        }
     </script>
 </head>
-<body>
+<div>
+    <textarea id="text" rows="10" cols="100"></textarea>
+</div>
 
-
+<div>
+    <select>
+        <option value="publish">推播</option>
+        <option value="subscribe">訂閱</option>
+        <option value="unsubscribe">取消訂閱</option>
+    </select>
+</div>
+<div>
+    Topic: <input type="text" id="topic" value="" placeholder="全體推播:all">
+</div>
+<div>
+    Message: <input type="text" id="msg" value="">
+</div>
+<button id="send" type="button">Send</button>
 </body>
 </html>
