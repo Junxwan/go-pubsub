@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Go PubSub</title>
+
+    <script type="text/javascript">
+
+        var ws = new WebSocket('ws://127.0.0.1:8080/ws');
+
+        ws.onopen = () => {
+            console.log("建立連線");
+        }
+
+        ws.onmessage = (msg) => {
+            console.log("Server messsage:", msg.data);
+        }
+
+        ws.onclose = () => {
+            alert("連線中斷")
+        }
+
+        window.ws = ws;
+    </script>
+</head>
+<body>
+
+
+</body>
+</html>
