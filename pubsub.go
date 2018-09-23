@@ -38,6 +38,12 @@ func (p *PubSub) add(client Client) *PubSub {
 }
 
 func (p *PubSub) addTopic(client Client, topic string) {
+	for _, t := range p.Topic {
+		if (t.Client.ID == client.ID && t.Topic == topic) {
+			return
+		}
+	}
+
 	p.Topic = append(p.Topic, Topic{
 		Topic:  topic,
 		Client: &client,
