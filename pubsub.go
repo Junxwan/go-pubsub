@@ -17,17 +17,31 @@ type Message struct {
 }
 
 const (
-	TopicAll = "all"
+	TopicAll    = "all"
+	PUBLISH     = "publish"
+	SUBSCRIBE   = "subscribe"
+	UNSUBSCRIBE = "unsubscribe"
 )
 
 func (p *PubSub) add(client Client) *PubSub {
 	p.Client = append(p.Client, client)
+	p.addTopic(client, TopicAll)
+	return p
+}
+
+func (p *PubSub) addTopic(client Client, topic string) {
 	p.Topic = append(p.Topic, Topic{
-		Topic:  TopicAll,
+		Topic:  topic,
 		Client: &client,
 	})
+}
 
-	return p
+func (p *PubSub) unTopic(client Client, topic string) {
+	for i, t := range p.Topic {
+		if (t.Client.ID == client.ID && t.Topic == topic) {
+			ps.Topic = append(ps.Topic[:i], ps.Topic[i+1:]...)
+		}
+	}
 }
 
 func (p *PubSub) remove(client Client) {
@@ -39,6 +53,15 @@ func (p *PubSub) remove(client Client) {
 	}
 }
 
-func (p PubSub) HandleReceiveMessage(client Client) {
-
+func (p *PubSub) HandleReceiveMessage(client Client, message Message) {
+	switch message.Action {
+	case PUBLISH:
+		break
+	case SUBSCRIBE:
+		p.addTopic(client, message.Topic)
+		break
+	case UNSUBSCRIBE:
+		p.unTopic(client, message.Topic)
+		break
+	}
 }

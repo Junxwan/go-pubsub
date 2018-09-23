@@ -61,6 +61,6 @@ func run(client Client) {
 			return
 		}
 
-		ps.HandleReceiveMessage(client)
+		ps.HandleReceiveMessage(client, msg)
 	}
 }
